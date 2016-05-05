@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:cxf="http://camel.apache.org/schema/cxf"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://camel.apache.org/schema/cxf
+       http://camel.apache.org/schema/cxf/camel-cxf-spring.xsd
+       http://camel.apache.org/schema/spring
+       http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+    <!-- H2 Datasource -->
+    <bean id="usecaseDB" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="org.h2.Driver"/>
+        <property name="url" value="jdbc:h2:tcp://localhost/~/test"/>
+        <property name="username" value="sa"/>
+        <property name="password" value=""/>
+    </bean>
+
+    <!-- SQL Component -->
+    <bean id="sql" class="org.apache.camel.component.sql.SqlComponent">
+
+    </bean>
+
+	
+	<!-- <bean id="jsonProvider" class="org.apache.cxf.jaxrs.provider.json.JSONProvider"/>-->
+	<!-- <bean id="jsonProvider" class="org.codehaus.jackson.jaxrs.JacksonJsonProvider"/>-->
+
+  <cxf:cxfEndpoint id="customerWebservice"
+                     address="http://localhost:9092/ws/customerService"
+                     wsdlURL="META-INF/wsdl/CustomerWS.wsdl"
+                     serviceClass="org.globex.usecase.service.CustomerWSImpl">
+    </cxf:cxfEndpoint>
+
+
+     <cxf:rsServer id="customerRestService" address="http://localhost:9000" 
+    serviceClass="org.globex.usecase.service.CustomerRest" 
+    loggingFeatureEnabled="true" loggingSizeLimit="20" skipFaultLogging="true">
+    <cxf:providers>
+       <ref bean="jsonProvider"/>
+    </cxf:providers>
+  </cxf:rsServer>
+  
+  <bean id="jsonProvider" class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider"/>
+   <cxf:rsClient id="customerRestServiceClient" address="http://localhost:9000" serviceClass="org.globex.usecase.service.CustomerRest"
+   loggingFeatureEnabled="true" skipFaultLogging="true" >
+   	<cxf:providers>
+       <ref bean="jsonProvider"/>
+    </cxf:providers>
+    </cxf:rsClient>
+
+	<bean id="changeGeo" class="org.globex.usecase.service.ChangeGeo"/>
+	
+	<bean id="customer" class="org.globex.usecase.service.CustomerWSImpl"/>
+
+    <camelContext trace="false" xmlns="http://camel.apache.org/schema/spring">
+  <propertyPlaceholder location="fabric8/route.properties" id="properties"/>
+  <dataFormats>
+    <json library="Jackson" unmarshalTypeName="org.globex.Account" id="json"/>
+  </dataFormats>
+  <route>
+    <from uri="cxfrs:bean:customerRestService?bindingStyle=SimpleConsumer"/>
+    <bean ref="changeGeo"/>
+  </route>
+  <route>
+    <from uri="cxf:bean:customerWebservice"/>
+    <log message="Body has been recieved -&gt; ${body}"/>
+    <bean ref="customer" method="updateAccount"/>
+  </route>
+  <route>
+    <from uri="file://src/data/inbox?noop=true&amp;include=(.)*.json"/>
+    <log message="Body is -&gt; ${body}"/>
+    <unmarshal ref="json"/>
+    <to uri="direct:callRestEndpoint"/>
+  </route>
+  <route>
+    <from uri="direct:callRestEndpoint"/>
+    <log message="Calling rest service with body -&gt; ${body}"/>
+    <log message="Headers -&gt; ${headers}"/>
+    <setHeader headerName="Content-Type">
+    	<constant>application/json</constant>
+    </setHeader>
+    <setHeader headerName="Exchange.HTTP_PATH">
+    	<constant>/customer/enrich</constant>
+    </setHeader>
+    <to uri="cxfrs:bean:customerRestServiceClient"/>
+    <log message="Rest service called with ${body}"/>
+  </route>
+</camelContext>
+</beans>
