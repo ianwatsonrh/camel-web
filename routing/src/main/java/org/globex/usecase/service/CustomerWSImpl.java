@@ -38,8 +38,10 @@ public class CustomerWSImpl implements CustomerWS {
     @SOAPBinding(parameterStyle = SOAPBinding.ParameterStyle.BARE)
     public CorporateAccount updateAccount(Account account) {
         CorporateAccount ca = new CorporateAccount();
-
-
+        ca.setCompany(account.getCompany());
+        ca.setContact(account.getContact());
+        ca.setId(account.getClientId());
+        ca.setSalesContact(getRandomSales(sales));
         return ca;
     }
 

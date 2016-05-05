@@ -53,28 +53,32 @@
 	<bean id="changeGeo" class="org.globex.usecase.service.ChangeGeo"/>
 	
 	<bean id="customer" class="org.globex.usecase.service.CustomerWSImpl"/>
+	<bean id="aggregationStrategy" class="org.globex.usecase.AccountAggregator"/>
 
     <camelContext trace="false" xmlns="http://camel.apache.org/schema/spring">
   <propertyPlaceholder location="fabric8/route.properties" id="properties"/>
   <dataFormats>
     <json library="Jackson" unmarshalTypeName="org.globex.Account" id="json"/>
   </dataFormats>
-  <route>
+  <route id="RestService">
     <from uri="cxfrs:bean:customerRestService?bindingStyle=SimpleConsumer"/>
     <bean ref="changeGeo"/>
   </route>
-  <route>
+  <route id="WebService">
     <from uri="cxf:bean:customerWebservice"/>
     <log message="Body has been recieved -&gt; ${body}"/>
     <bean ref="customer" method="updateAccount"/>
   </route>
-  <route>
+  <route id="Process">
     <from uri="file://src/data/inbox?noop=true&amp;include=(.)*.json"/>
     <log message="Body is -&gt; ${body}"/>
     <unmarshal ref="json"/>
-    <to uri="direct:callRestEndpoint"/>
+    <multicast strategyRef="aggregationStrategy" parallelProcessing="true">
+    	<to uri="direct:callRestEndpoint"/>
+    	<to uri="direct:callWSEndpoint"/>
+    </multicast>
   </route>
-  <route>
+  <route id="InvokeRestService">
     <from uri="direct:callRestEndpoint"/>
     <log message="Calling rest service with body -&gt; ${body}"/>
     <log message="Headers -&gt; ${headers}"/>
@@ -86,6 +90,12 @@
     </setHeader>
     <to uri="cxfrs:bean:customerRestServiceClient"/>
     <log message="Rest service called with ${body}"/>
+  </route>
+  
+  <route id="InvokeWebService">
+  	<from uri="direct:callWSEndpoint"/>
+  	<log message="Invoking Endpoint"/>
+  	<to uri="cxf:bean:customerWebservice"/>
   </route>
 </camelContext>
 </beans>
