@@ -3,6 +3,7 @@ package org.globex.usecase;
 import org.apache.camel.Body;
 import org.apache.camel.Exchange;
 import org.globex.Account;
+import org.globex.CorporateAccount;
 
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -22,10 +23,10 @@ public class ProcessorBean {
         exchange.getIn().setBody(response);
     }
 
-    public Map<String, Object> defineNamedParameters(@Body Account ac) {
+    public Map<String, Object> defineNamedParameters(@Body CorporateAccount ac) {
         Map<String, Object> map = new HashMap<String, Object>();
-        map.put("CLIENT_ID",ac.getClientId());
-        map.put("SALES_CONTACT",ac.getSalesRepresentative());
+        map.put("CLIENT_ID",ac.getId());
+        map.put("SALES_CONTACT",ac.getSalesContact());
         map.put("COMPANY_NAME",ac.getCompany().getName());
         map.put("COMPANY_GEO",ac.getCompany().getGeo());
         map.put("COMPANY_ACTIVE",ac.getCompany().isActive());

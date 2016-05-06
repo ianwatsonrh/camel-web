@@ -13,16 +13,17 @@
     <!-- H2 Datasource -->
     <bean id="usecaseDB" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="driverClassName" value="org.h2.Driver"/>
-        <property name="url" value="jdbc:h2:tcp://localhost/~/test"/>
+        <property name="url" value="jdbc:h2:~/test"/>
         <property name="username" value="sa"/>
         <property name="password" value=""/>
     </bean>
 
     <!-- SQL Component -->
     <bean id="sql" class="org.apache.camel.component.sql.SqlComponent">
-
+		
     </bean>
 
+	<bean id="sqlBean" class="org.globex.usecase.ProcessorBean"/>
 	
 	<!-- <bean id="jsonProvider" class="org.apache.cxf.jaxrs.provider.json.JSONProvider"/>-->
 	<!-- <bean id="jsonProvider" class="org.codehaus.jackson.jaxrs.JacksonJsonProvider"/>-->
@@ -77,6 +78,7 @@
     	<to uri="direct:callRestEndpoint"/>
     	<to uri="direct:callWSEndpoint"/>
     </multicast>
+    <to uri="direct:dbInsert"/>
   </route>
   <route id="InvokeRestService">
     <from uri="direct:callRestEndpoint"/>
@@ -97,5 +99,53 @@
   	<log message="Invoking Endpoint"/>
   	<to uri="cxf:bean:customerWebservice"/>
   </route>
+  
+  <route id="DBInsert">
+  	<from uri="direct:dbInsert"/>
+  	<log message="Insert into DB"/>
+  	<bean ref="sqlBean" method="defineNamedParameters"/>
+  	<!-- <to uri="sql:classpath:sql/insert.sql?dataSource=usecaseDB"/>-->
+  	<to uri="sql:insert into usecase.t_account (
+CLIENT_ID ,
+SALES_CONTACT ,
+COMPANY_NAME ,
+COMPANY_GEO  ,
+COMPANY_ACTIVE ,
+CONTACT_FIRST_NAME ,
+CONTACT_LAST_NAME ,
+CONTACT_ADDRESS,
+CONTACT_CITY,
+CONTACT_STATE,
+CONTACT_ZIP,
+CONTACT_PHONE ,
+CREATION_DATE ,
+CREATION_USER)
+values (
+:#CLIENT_ID ,
+:#SALES_CONTACT ,
+:#COMPANY_NAME ,
+:#COMPANY_GEO  ,
+:#COMPANY_ACTIVE ,
+:#CONTACT_FIRST_NAME ,
+:#CONTACT_LAST_NAME ,
+:#CONTACT_ADDRESS,
+:#CONTACT_CITY,
+:#CONTACT_STATE,
+:#CONTACT_ZIP,
+:#CONTACT_PHONE ,
+:#CREATION_DATE ,
+:#CREATION_USER
+);?dataSource=usecaseDB"/>
+  	<log message="Body -> ${body}"/>
+  </route>
+  
+  
+  <route id="SQLTest">
+  	<from uri="timer://foo?fixedRate=true&amp;period=5s"/>
+  	<log message="Invoking SQL"/>
+  	<to uri="sql:select * from usecase.t_account?dataSource=usecaseDB"/>
+  	<log message="Body is -> ${body}"/>
+  </route>
+  
 </camelContext>
 </beans>
