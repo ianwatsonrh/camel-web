@@ -19,6 +19,7 @@
 
         <!-- Versions should be the same as defined within the Fuse BOM -->
         <camel.version>2.15.1.redhat-621084</camel.version>
+        <activemq.version>5.11.0.redhat-621084</activemq.version>
         <cxf.version>2.15.1.redhat-621084</cxf.version>
 
         <!-- Apache Maven plugins -->
@@ -52,6 +53,11 @@
                 <version>${camel.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.activemq</groupId>
+                <artifactId>activemq-jaas</artifactId>
+                <version>${activemq.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

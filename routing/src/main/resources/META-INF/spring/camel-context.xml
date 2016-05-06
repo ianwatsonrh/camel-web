@@ -55,6 +55,25 @@
 	
 	<bean id="customer" class="org.globex.usecase.service.CustomerWSImpl"/>
 	<bean id="aggregationStrategy" class="org.globex.usecase.AccountAggregator"/>
+	
+	<!-- Spring JMS TxManager -->
+     <bean id="jmsTransactionManager" class="org.springframework.jms.connection.JmsTransactionManager">
+        <property name="connectionFactory" ref="jmsConnectionFactory"/>
+    </bean>
+
+    <!-- JMS ConnectionFactory  -->
+        <bean id="jmsConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+         <property name="brokerURL" value="vm://demo?waitForStart=10000" />
+         <property name="userName" value="admin"/>
+         <property name="password" value="admin"/>
+    </bean>
+
+    <!-- ActiveMQ Camel Component - Tx -->
+    <bean id="activemq123" class="org.apache.activemq.camel.component.ActiveMQComponent" >
+        <property name="connectionFactory" ref="jmsConnectionFactory"/>
+        <property name="transacted" value="true"/>
+        <property name="transactionManager" ref="jmsTransactionManager"/>
+    </bean>
 
     <camelContext trace="false" xmlns="http://camel.apache.org/schema/spring">
   <propertyPlaceholder location="fabric8/route.properties" id="properties"/>
@@ -146,6 +165,20 @@ values (
   	<to uri="sql:select * from usecase.t_account?dataSource=usecaseDB"/>
   	<log message="Body is -> ${body}"/>
   </route>
+  
+  <route>
+        <from uri="timer://foo?fixedRate=true&amp;period=5s"/>
+                <log message="Sending to JMS queue"/>
+                <setBody>
+                        <constant>Test message</constant>
+                </setBody>
+                <to uri="activemq:foo.bar"/>
+        </route>
+
+        <route>
+                <from uri="activemq:foo.bar"/>
+                <log message="message is -> ${body}"/>
+        </route>
   
 </camelContext>
 </beans>
