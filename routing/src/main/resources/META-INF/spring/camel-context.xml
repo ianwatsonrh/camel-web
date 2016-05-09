@@ -77,6 +77,9 @@
 
     <camelContext trace="false" xmlns="http://camel.apache.org/schema/spring">
   <propertyPlaceholder location="fabric8/route.properties" id="properties"/>
+  
+  <package>com.redhat.iw.routes</package>
+  
   <endpoint
 			uri="dozer:transformCSV?unmarshalId=csv&amp;marshalId=myjson&amp;mappingFile=transformations/csv2json.xml&amp;targetModel=org.globex.Account"
 			id="transform" />
@@ -87,28 +90,6 @@
   </dataFormats>
   
  
-	
-	<onException>
-				<exception>java.lang.IllegalArgumentException</exception>
-				<handled>
-					<constant>true</constant>
-				</handled>
-				<to uri="{{fileError}}" />
-			</onException>
-	
-		<route>
-			
-		
-			<from uri="{{fileInput}}" />
-			<split>
-				<tokenize token="\n"></tokenize>
-				<to ref="transform" />
-				<to uri="{{fileOutput}}" />
-			</split>
-		</route>
-  
-  
-  
   
   
   
@@ -212,6 +193,6 @@ values (
                 <from uri="activemq:foo.bar"/>
                 <log message="message is -> ${body}"/>
         </route>
-  
+        
 </camelContext>
 </beans>

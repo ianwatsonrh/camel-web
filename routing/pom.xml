@@ -107,6 +107,10 @@
             <artifactId>camel-sql</artifactId>
         </dependency>
         <dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-cdi</artifactId>
+		</dependency>
+        <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
         </dependency>
