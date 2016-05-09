@@ -7,8 +7,7 @@ import org.apache.camel.cdi.Uri;
 
 public class CSV2JSONRouteBuilder extends RouteBuilder {
 
-	//@EndpointInject	(uri = "dozer:transformCSV?unmarshalId=csv&marshalId=myjson&mappingFile=transformations/csv2json.xml&targetModel=org.globex.Account")
-	@EndpointInject (ref = "transform")
+	@EndpointInject	(uri = "dozer:transformCSV?unmarshalId=csv&marshalId=myjson&mappingFile=transformations/csv2json.xml&targetModel=org.globex.Account")
 	Endpoint transform;
 	
 	@EndpointInject (uri = "{{fileInput}}")
@@ -30,8 +29,7 @@ public class CSV2JSONRouteBuilder extends RouteBuilder {
 		from(input).routeId("CSV2JSON")
 			.split(body(String.class).tokenize("\n"))
 				.to(transform)
-				.to(output);
-		
+				.to(output);	
 	}
 
 }

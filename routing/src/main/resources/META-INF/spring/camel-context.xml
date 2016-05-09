@@ -76,13 +76,10 @@
     </bean>
 
     <camelContext trace="false" xmlns="http://camel.apache.org/schema/spring">
-  <propertyPlaceholder location="fabric8/route.properties" id="properties"/>
+  <propertyPlaceholder location="fabric8/route.properties,sql/insert.properties" id="properties"/>
   
   <package>com.redhat.iw.routes</package>
   
-  <endpoint
-			uri="dozer:transformCSV?unmarshalId=csv&amp;marshalId=myjson&amp;mappingFile=transformations/csv2json.xml&amp;targetModel=org.globex.Account"
-			id="transform" />
   <dataFormats>
     <json library="Jackson" unmarshalTypeName="org.globex.Account" id="json"/>
     <json library="Jackson" id="myjson" />
@@ -133,44 +130,7 @@
   	<to uri="cxf:bean:customerWebservice"/>
   </route>
   
-  <route id="DBInsert">
-  	<from uri="direct:dbInsert"/>
-  	<log message="Insert into DB"/>
-  	<bean ref="sqlBean" method="defineNamedParameters"/>
-  	<!-- <to uri="sql:classpath:sql/insert.sql?dataSource=usecaseDB"/>-->
-  	<to uri="sql:insert into usecase.t_account (
-CLIENT_ID ,
-SALES_CONTACT ,
-COMPANY_NAME ,
-COMPANY_GEO  ,
-COMPANY_ACTIVE ,
-CONTACT_FIRST_NAME ,
-CONTACT_LAST_NAME ,
-CONTACT_ADDRESS,
-CONTACT_CITY,
-CONTACT_STATE,
-CONTACT_ZIP,
-CONTACT_PHONE ,
-CREATION_DATE ,
-CREATION_USER)
-values (
-:#CLIENT_ID ,
-:#SALES_CONTACT ,
-:#COMPANY_NAME ,
-:#COMPANY_GEO  ,
-:#COMPANY_ACTIVE ,
-:#CONTACT_FIRST_NAME ,
-:#CONTACT_LAST_NAME ,
-:#CONTACT_ADDRESS,
-:#CONTACT_CITY,
-:#CONTACT_STATE,
-:#CONTACT_ZIP,
-:#CONTACT_PHONE ,
-:#CREATION_DATE ,
-:#CREATION_USER
-);?dataSource=usecaseDB"/>
-  	<log message="Body -> ${body}"/>
-  </route>
+  
   
   
   <route id="SQLTest">
