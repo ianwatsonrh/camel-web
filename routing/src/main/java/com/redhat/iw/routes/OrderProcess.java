@@ -14,7 +14,8 @@ public class OrderProcess extends RouteBuilder {
 	@BeanInject
 	CustomerWSImpl customer;
 	
-	@EndpointInject (uri = "file://src/data/inbox?noop=true&include=(.)*.json")
+	@EndpointInject (ref = "orderInputQueue")
+			//uri = "file://src/data/inbox?noop=true&include=(.)*.json")
 	Endpoint orderInput;
 	
 	@EndpointInject (uri = "direct:callRestEndpoint")

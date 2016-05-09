@@ -66,7 +66,7 @@
     </bean>
 
     <!-- ActiveMQ Camel Component - Tx -->
-    <bean id="activemq123" class="org.apache.activemq.camel.component.ActiveMQComponent" >
+    <bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent" >
         <property name="connectionFactory" ref="jmsConnectionFactory"/>
         <property name="transacted" value="true"/>
         <property name="transactionManager" ref="jmsTransactionManager"/>
@@ -77,6 +77,10 @@
   		<package>com.redhat.iw.routes</package>
   
   		<endpoint id="dozerTransform" uri="dozer:transformCSV?unmarshalId=csv&amp;marshalId=myjson&amp;mappingFile=transformations/csv2json.xml&amp;targetModel=org.globex.Account"/>
+  
+  		<endpoint id="orderInputQueue" uri="activemq:orders.incoming"/>
+  		<endpoint id="orderDQL" uri="activemq:orders.DLQ"/>
+  	
   
   		<dataFormats>
     		<json library="Jackson" id="myjson" />
@@ -103,11 +107,12 @@
                 </setBody>
                 <to uri="activemq:foo.bar"/>
         </route>
-
-        <route>
-                <from uri="activemq:foo.bar"/>
-                <log message="message is -> ${body}"/>
+-->
+         <route>
+                <from ref="orderDQL"/>
+                <log message="DLQ message is -> ${body}"/>
+                <log message="Header -> ${header.FailureMessage}"/>
         </route>
-        -->
+        
 </camelContext>
 </beans>
