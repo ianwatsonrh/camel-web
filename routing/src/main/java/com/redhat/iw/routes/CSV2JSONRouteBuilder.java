@@ -7,7 +7,7 @@ import org.apache.camel.cdi.Uri;
 
 public class CSV2JSONRouteBuilder extends RouteBuilder {
 
-	@EndpointInject	(uri = "dozer:transformCSV?unmarshalId=csv&marshalId=myjson&mappingFile=transformations/csv2json.xml&targetModel=org.globex.Account")
+	@EndpointInject	(ref = "dozerTransform")
 	Endpoint transform;
 	
 	@EndpointInject (uri = "{{fileInput}}")

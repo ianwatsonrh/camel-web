@@ -18,42 +18,39 @@
         <property name="password" value=""/>
     </bean>
 
-    <!-- SQL Component -->
-    <bean id="sql" class="org.apache.camel.component.sql.SqlComponent">
-		
-    </bean>
-
+    <!-- SQL Header map -->
 	<bean id="sqlBean" class="org.globex.usecase.ProcessorBean"/>
-	
-	<!-- <bean id="jsonProvider" class="org.apache.cxf.jaxrs.provider.json.JSONProvider"/>-->
-	<!-- <bean id="jsonProvider" class="org.codehaus.jackson.jaxrs.JacksonJsonProvider"/>-->
 
-  <cxf:cxfEndpoint id="customerWebservice"
+	<!-- Web and rest service section-->
+	<bean id="jsonProvider" class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider"/>
+
+  	<cxf:cxfEndpoint id="customerWebservice"
                      address="http://localhost:9092/ws/customerService"
                      wsdlURL="META-INF/wsdl/CustomerWS.wsdl"
                      serviceClass="org.globex.usecase.service.CustomerWSImpl">
     </cxf:cxfEndpoint>
 
-
-     <cxf:rsServer id="customerRestService" address="http://localhost:9000" 
-    serviceClass="org.globex.usecase.service.CustomerRest" 
-    loggingFeatureEnabled="true" loggingSizeLimit="20" skipFaultLogging="true">
-    <cxf:providers>
-       <ref bean="jsonProvider"/>
-    </cxf:providers>
-  </cxf:rsServer>
+    <cxf:rsServer id="customerRestService" address="http://localhost:9000" 
+    	serviceClass="org.globex.usecase.service.CustomerRest" 
+    	loggingFeatureEnabled="true" loggingSizeLimit="20" skipFaultLogging="true">
+    	<cxf:providers>
+       		<ref bean="jsonProvider"/>
+    	</cxf:providers>
+  	</cxf:rsServer>
   
-  <bean id="jsonProvider" class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider"/>
    <cxf:rsClient id="customerRestServiceClient" address="http://localhost:9000" serviceClass="org.globex.usecase.service.CustomerRest"
-   loggingFeatureEnabled="true" skipFaultLogging="true" >
-   	<cxf:providers>
-       <ref bean="jsonProvider"/>
-    </cxf:providers>
-    </cxf:rsClient>
+   		loggingFeatureEnabled="true" skipFaultLogging="true" >
+   		<cxf:providers>
+       		<ref bean="jsonProvider"/>
+    	</cxf:providers>
+   </cxf:rsClient>
 
+	<!-- Rest implementation -->
 	<bean id="changeGeo" class="org.globex.usecase.service.ChangeGeo"/>
-	
+	<!-- Web service implementation -->
 	<bean id="customer" class="org.globex.usecase.service.CustomerWSImpl"/>
+	
+	<!-- Multicast aggregation strategy -->
 	<bean id="aggregationStrategy" class="org.globex.usecase.AccountAggregator"/>
 	
 	<!-- Spring JMS TxManager -->
@@ -76,69 +73,27 @@
     </bean>
 
     <camelContext trace="false" xmlns="http://camel.apache.org/schema/spring">
-  <propertyPlaceholder location="fabric8/route.properties,sql/insert.properties" id="properties"/>
+  		<propertyPlaceholder location="fabric8/route.properties,sql/insert.properties" id="properties"/>
+  		<package>com.redhat.iw.routes</package>
   
-  <package>com.redhat.iw.routes</package>
+  		<endpoint id="dozerTransform" uri="dozer:transformCSV?unmarshalId=csv&amp;marshalId=myjson&amp;mappingFile=transformations/csv2json.xml&amp;targetModel=org.globex.Account"/>
   
-  <dataFormats>
-    <json library="Jackson" unmarshalTypeName="org.globex.Account" id="json"/>
-    <json library="Jackson" id="myjson" />
-	<bindy type="Csv" classType="org.acme.Customer" id="csv" />
-  </dataFormats>
+  		<dataFormats>
+    		<json library="Jackson" id="myjson" />
+			<bindy type="Csv" classType="org.acme.Customer" id="csv" />
+  		</dataFormats>
+  		
+		<route id="RestService">
+			<from uri="cxfrs:bean:customerRestService?bindingStyle=SimpleConsumer"/>
+		    <bean ref="changeGeo"/>
+		</route>
+		<route id="WebService">
+			<from uri="cxf:bean:customerWebservice"/>
+		    <log message="Body has been recieved -&gt; ${body}"/>
+		    <bean ref="customer" method="updateAccount"/>
+		</route>
   
- 
-  
-  
-  
-  
-  <route id="RestService">
-    <from uri="cxfrs:bean:customerRestService?bindingStyle=SimpleConsumer"/>
-    <bean ref="changeGeo"/>
-  </route>
-  <route id="WebService">
-    <from uri="cxf:bean:customerWebservice"/>
-    <log message="Body has been recieved -&gt; ${body}"/>
-    <bean ref="customer" method="updateAccount"/>
-  </route>
-  <route id="Process">
-    <from uri="file://src/data/inbox?noop=true&amp;include=(.)*.json"/>
-    <log message="Body is -&gt; ${body}"/>
-    <unmarshal ref="json"/>
-    <multicast strategyRef="aggregationStrategy" parallelProcessing="true">
-    	<to uri="direct:callRestEndpoint"/>
-    	<to uri="direct:callWSEndpoint"/>
-    </multicast>
-    <to uri="direct:dbInsert"/>
-  </route>
-  <route id="InvokeRestService">
-    <from uri="direct:callRestEndpoint"/>
-    <log message="Calling rest service with body -&gt; ${body}"/>
-    <log message="Headers -&gt; ${headers}"/>
-    <setHeader headerName="Content-Type">
-    	<constant>application/json</constant>
-    </setHeader>
-    <setHeader headerName="Exchange.HTTP_PATH">
-    	<constant>/customer/enrich</constant>
-    </setHeader>
-    <to uri="cxfrs:bean:customerRestServiceClient"/>
-    <log message="Rest service called with ${body}"/>
-  </route>
-  
-  <route id="InvokeWebService">
-  	<from uri="direct:callWSEndpoint"/>
-  	<log message="Invoking Endpoint"/>
-  	<to uri="cxf:bean:customerWebservice"/>
-  </route>
-  
-  
-  
-  
-  <route id="SQLTest">
-  	<from uri="timer://foo?fixedRate=true&amp;period=5s"/>
-  	<log message="Invoking SQL"/>
-  	<to uri="sql:select * from usecase.t_account?dataSource=usecaseDB"/>
-  	<log message="Body is -> ${body}"/>
-  </route>
+  <!-- 
   
   <route>
         <from uri="timer://foo?fixedRate=true&amp;period=5s"/>
@@ -153,6 +108,6 @@
                 <from uri="activemq:foo.bar"/>
                 <log message="message is -> ${body}"/>
         </route>
-        
+        -->
 </camelContext>
 </beans>
