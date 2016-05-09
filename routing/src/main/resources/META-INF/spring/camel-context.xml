@@ -77,9 +77,42 @@
 
     <camelContext trace="false" xmlns="http://camel.apache.org/schema/spring">
   <propertyPlaceholder location="fabric8/route.properties" id="properties"/>
+  <endpoint
+			uri="dozer:transformCSV?unmarshalId=csv&amp;marshalId=myjson&amp;mappingFile=transformations/csv2json.xml&amp;targetModel=org.globex.Account"
+			id="transform" />
   <dataFormats>
     <json library="Jackson" unmarshalTypeName="org.globex.Account" id="json"/>
+    <json library="Jackson" id="myjson" />
+	<bindy type="Csv" classType="org.acme.Customer" id="csv" />
   </dataFormats>
+  
+ 
+	
+	<onException>
+				<exception>java.lang.IllegalArgumentException</exception>
+				<handled>
+					<constant>true</constant>
+				</handled>
+				<to uri="{{fileError}}" />
+			</onException>
+	
+		<route>
+			
+		
+			<from uri="{{fileInput}}" />
+			<split>
+				<tokenize token="\n"></tokenize>
+				<to ref="transform" />
+				<to uri="{{fileOutput}}" />
+			</split>
+		</route>
+  
+  
+  
+  
+  
+  
+  
   <route id="RestService">
     <from uri="cxfrs:bean:customerRestService?bindingStyle=SimpleConsumer"/>
     <bean ref="changeGeo"/>
