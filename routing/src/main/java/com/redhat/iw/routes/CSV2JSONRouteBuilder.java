@@ -21,9 +21,12 @@ public class CSV2JSONRouteBuilder extends RouteBuilder {
 	@EndpointInject (ref = "orderDQL")
 	Endpoint error;
 	
+	@EndpointInject( uri = "jpa:com.redhat.iw.beans.DLQEntity?consumeDelete=false&consumer.namedQuery=consume")
+	Endpoint poll;
+	
 	@Override
 	public void configure() throws Exception {
-		// TODO Auto-generated method stub
+		// We could also use a dead letter queue here and call out to direct endpoint which will then call out to process
 		onException(java.lang.IllegalArgumentException.class)
 			.handled(true)
 			.log("A illegal argument exception has occurred")
@@ -35,6 +38,9 @@ public class CSV2JSONRouteBuilder extends RouteBuilder {
 			.split(body(String.class).tokenize("\n"))
 				.to(transform)
 				.to(output);	
+		
+		from(poll).routeId("PollError")
+			.log("Message is -> ${body}");
 	}
 
 }

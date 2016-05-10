@@ -25,12 +25,12 @@
 	<bean id="jsonProvider" class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider"/>
 
   	<cxf:cxfEndpoint id="customerWebservice"
-                     address="http://localhost:9092/ws/customerService"
+                     address="http://localhost:9095/ws/customerService"
                      wsdlURL="META-INF/wsdl/CustomerWS.wsdl"
                      serviceClass="org.globex.usecase.service.CustomerWSImpl">
     </cxf:cxfEndpoint>
 
-    <cxf:rsServer id="customerRestService" address="http://localhost:9000" 
+    <cxf:rsServer id="customerRestService" address="http://localhost:9011" 
     	serviceClass="org.globex.usecase.service.CustomerRest" 
     	loggingFeatureEnabled="true" loggingSizeLimit="20" skipFaultLogging="true">
     	<cxf:providers>
@@ -38,7 +38,7 @@
     	</cxf:providers>
   	</cxf:rsServer>
   
-   <cxf:rsClient id="customerRestServiceClient" address="http://localhost:9000" serviceClass="org.globex.usecase.service.CustomerRest"
+   <cxf:rsClient id="customerRestServiceClient" address="http://localhost:9011" serviceClass="org.globex.usecase.service.CustomerRest"
    		loggingFeatureEnabled="true" skipFaultLogging="true" >
    		<cxf:providers>
        		<ref bean="jsonProvider"/>
@@ -71,9 +71,19 @@
         <property name="transacted" value="true"/>
         <property name="transactionManager" ref="jmsTransactionManager"/>
     </bean>
+    
+	<bean id="dlqSQLBean" class="com.redhat.iw.beans.DLQBean"/>
+	
+	<bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalEntityManagerFactoryBean">
+        <property name="persistenceUnitName" value="camel"/>
+    </bean>
+	
+	<bean id="jpa" class="org.apache.camel.component.jpa.JpaComponent">
+   		<property name="entityManagerFactory" ref="entityManagerFactory"/>
+	</bean>
 
     <camelContext trace="false" xmlns="http://camel.apache.org/schema/spring">
-  		<propertyPlaceholder location="fabric8/route.properties,sql/insert.properties" id="properties"/>
+  		<propertyPlaceholder location="fabric8/route.properties,sql/insert.properties,sql/insertDLQ.properties,sql/pollDLQ.properties" id="properties"/>
   		<package>com.redhat.iw.routes</package>
   
   		<endpoint id="dozerTransform" uri="dozer:transformCSV?unmarshalId=csv&amp;marshalId=myjson&amp;mappingFile=transformations/csv2json.xml&amp;targetModel=org.globex.Account"/>
