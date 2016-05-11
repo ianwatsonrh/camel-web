@@ -24,13 +24,14 @@
         </destinationPolicy>
 
         <plugins>
-        	<amq:simpleAuthenticationPlugin>
+        	<amq:jaasAuthenticationPlugin configuration="LDAPLogin"/>
+        	<!-- <amq:simpleAuthenticationPlugin>
         	 	<amq:users>
         	 		<amq:authenticationUser username="admin" password="admin" groups="users,admins"/>
         	 	</amq:users>
         	</amq:simpleAuthenticationPlugin>
-        	
-        	<amq:loggingBrokerPlugin logAll="false" logConnectionEvents="false" logConsumerEvents="false" logInternalEvents="false" logProducerEvents="false" logSessionEvents="false" logTransactionEvents="false" > </amq:loggingBrokerPlugin>
+        	-->
+        	<!--  <amq:loggingBrokerPlugin logAll="false" logConnectionEvents="false" logConsumerEvents="false" logInternalEvents="false" logProducerEvents="false" logSessionEvents="false" logTransactionEvents="false" > </amq:loggingBrokerPlugin>-->
 
         </plugins>
 

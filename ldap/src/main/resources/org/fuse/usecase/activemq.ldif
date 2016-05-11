@@ -1,0 +1,130 @@
+##########################
+## Define basic objects ##
+##########################
+
+dn: ou=ActiveMQ,ou=system
+objectClass: organizationalUnit
+objectClass: top
+ou: ActiveMQ
+
+dn: ou=Services,ou=system
+ou: Services
+objectClass: organizationalUnit
+objectClass: top
+
+dn: cn=mqbroker,ou=Services,ou=system
+cn: mqbroker
+objectClass: organizationalRole
+objectClass: top
+objectClass: simpleSecurityObject
+#userPassword: {SSHA}YvMAkkd66cDecNoejo8jnw5uUUBziyl0
+userPassword: {SSHA}pnimPWrdUcOPaYxYDHcochXEteU=
+description: Bind user for MQ broker
+
+
+###################
+## Define groups ##
+###################
+
+dn: ou=Group,ou=ActiveMQ,ou=system
+objectClass: organizationalUnit
+objectClass: top
+ou: Group
+
+dn: cn=admins,ou=Group,ou=ActiveMQ,ou=system
+cn: admins
+member: uid=admin
+objectClass: groupOfNames
+objectClass: top
+
+dn: cn=users,ou=Group,ou=ActiveMQ,ou=system
+cn: users
+member: uid=jdoe
+objectClass: groupOfNames
+objectClass: top
+
+##################
+## Define users ##
+##################
+
+dn: ou=User,ou=ActiveMQ,ou=system
+objectClass: organizationalUnit
+objectClass: top
+ou: User
+
+dn: uid=admin,ou=User,ou=ActiveMQ,ou=system
+uid: admin
+#userPassword: {SSHA}YvMAkkd66cDecNoejo8jnw5uUUBziyl0
+userPassword: {SSHA}pnimPWrdUcOPaYxYDHcochXEteU=
+objectClass: account
+objectClass: simpleSecurityObject
+objectClass: top
+
+dn: uid=jdoe,ou=User,ou=ActiveMQ,ou=system
+uid: jdoe
+#userPassword: {SSHA}YvMAkkd66cDecNoejo8jnw5uUUBziyl0
+userPassword: {SSHA}pnimPWrdUcOPaYxYDHcochXEteU=
+objectclass: inetOrgPerson
+objectclass: organizationalPerson
+objectclass: person
+objectclass: top
+cn: Jane Doe
+sn: Doe
+
+#########################
+## Define destinations ##
+#########################
+
+dn: ou=Destination,ou=ActiveMQ,ou=system
+objectClass: organizationalUnit
+objectClass: top
+ou: Destination
+
+dn: ou=Topic,ou=Destination,ou=ActiveMQ,ou=system
+objectClass: organizationalUnit
+objectClass: top
+ou: Topic
+
+dn: ou=Queue,ou=Destination,ou=ActiveMQ,ou=system
+objectClass: organizationalUnit
+objectClass: top
+ou: Queue
+
+dn: cn=test,ou=Queue,ou=Destination,ou=ActiveMQ,ou=syst
+ em
+cn: test
+description: A queue
+objectClass: applicationProcess
+objectClass: top
+
+dn: cn=orders.$,ou=Queue,ou=Destination,ou=ActiveMQ,ou=syst
+ em
+cn: orders.$
+description: A queue
+objectClass: applicationProcess
+objectClass: top
+
+dn: cn=read,cn=orders.$,ou=Queue,ou=Destination,ou=ActiveMQ,ou=syst
+ em
+cn: read
+member: cn=users
+description: Admin privilege group, members are roles
+objectClass: groupOfNames
+objectClass: top
+
+dn: cn=write,cn=orders.$,ou=Queue,ou=Destination,ou=ActiveMQ,ou=syst
+ em
+cn: write
+member: cn=users
+description: Admin privilege group, members are roles
+objectClass: groupOfNames
+objectClass: top
+
+dn: cn=admin,cn=orders.$,ou=Queue,ou=Destination,ou=ActiveM
+ Q,ou=system
+cn: admin
+description: Admin privilege group, members are roles
+member: cn=users
+member: cn=admins
+objectClass: groupOfNames
+objectClass: top

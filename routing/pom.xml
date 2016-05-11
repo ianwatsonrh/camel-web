@@ -187,6 +187,19 @@
 	<version>1.0.2</version>
 </dependency>
 
+<!-- LDAP -->
+<dependency>
+            <groupId>org.fuse.usecase2</groupId>
+            <artifactId>ldap</artifactId>
+            <version>1.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.directory.server</groupId>
+                    <artifactId>apacheds-all</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
         <!-- Testing -->
         <dependency>
             <groupId>junit</groupId>
@@ -208,7 +221,9 @@
                 <groupId>org.apache.camel</groupId>
                 <artifactId>camel-maven-plugin</artifactId>
                 <configuration>
-                    <applicationContextUri>META-INF/spring/*.xml</applicationContextUri>
+                     <applicationContextUri>
+                        META-INF/spring/local/ldap-server.xml;META-INF/spring/local/activemq-broker.xml;META-INF/spring/*.xml
+                    </applicationContextUri>
                 </configuration>
             </plugin>
 

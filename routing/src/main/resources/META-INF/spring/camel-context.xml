@@ -61,8 +61,8 @@
     <!-- JMS ConnectionFactory  -->
         <bean id="jmsConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
          <property name="brokerURL" value="vm://demo?waitForStart=10000" />
-         <property name="userName" value="admin"/>
-         <property name="password" value="admin"/>
+         <property name="userName" value="jdoe"/>
+         <property name="password" value="sunflower"/>
     </bean>
 
     <!-- ActiveMQ Camel Component - Tx -->
@@ -82,7 +82,7 @@
    		<property name="entityManagerFactory" ref="entityManagerFactory"/>
 	</bean>
 
-    <camelContext trace="false" xmlns="http://camel.apache.org/schema/spring">
+    <camelContext trace="false" xmlns="http://camel.apache.org/schema/spring" depends-on="activemq">
   		<propertyPlaceholder location="fabric8/route.properties,sql/insert.properties,sql/insertDLQ.properties,sql/pollDLQ.properties" id="properties"/>
   		<package>com.redhat.iw.routes</package>
   
