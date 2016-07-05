@@ -6,7 +6,7 @@ import org.apache.camel.component.jpa.Consumed;
 
 @Entity
 @Table(name = "USECASE.T_ERROR")
-@NamedQuery(name="consume", query="SELECT OBJECT(e) FROM DLQEntity e where status = 'FIXED'") 
+@NamedQuery(name="consume", query="SELECT OBJECT(e) FROM DLQEntity e where e.status = 'FIXED'") 
 public class DLQEntity {
 	
 	@Id

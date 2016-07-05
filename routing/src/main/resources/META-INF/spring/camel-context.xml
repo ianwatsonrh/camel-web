@@ -9,6 +9,14 @@
        http://camel.apache.org/schema/cxf/camel-cxf-spring.xsd
        http://camel.apache.org/schema/spring
        http://camel.apache.org/schema/spring/camel-spring.xsd">
+       
+       
+       <!-- 
+       xmlns:osgi="http://www.springframework.org/schema/osgi"  
+       
+       http://www.springframework.org/schema/osgi  
+       http://www.springframework.org/schema/osgi/spring-osgi.xsd" -->
+       
 
     <!-- H2 Datasource -->
     <bean id="usecaseDB" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
@@ -74,11 +82,13 @@
     
 	<bean id="dlqSQLBean" class="com.redhat.iw.beans.DLQBean"/>
 	
+	<!-- <osgi:reference id="persistenceProvider" interface="javax.persistence.spi.PersistenceProvider"/> -->
+	
 	<bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalEntityManagerFactoryBean">
         <property name="persistenceUnitName" value="camel"/>
     </bean>
 	
-	<bean id="jpa" class="org.apache.camel.component.jpa.JpaComponent">
+	<bean id="jpa" class="org.apache.camel.component.jpa.JpaComponent"> <!--  depends-on="persistenceProvider">-->
    		<property name="entityManagerFactory" ref="entityManagerFactory"/>
 	</bean>
 

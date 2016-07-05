@@ -4,7 +4,14 @@
     <feature name="usecase-camel-aggregation-db" version="1.0">
     </feature>
 
-    <feature name="h2" version="1.4.190">
-        <bundle>mvn:com.h2database/h2/1.4.190</bundle>
+    <feature name="app" version="${project.version}">
+    	<bundle>mvn:org.fuse.usecase2/routing/${project.version}</bundle>
+        <bundle>wrap:mvn:com.h2database/h2/1.4.190</bundle>
+        <feature>hibernate</feature>
+        <feature version="${camel.version}">camel-dozer</feature>
+        <feature version="${camel.version}">camel-jpa</feature>
+        <feature version="${camel.version}">camel-sql</feature>
+        <feature version="${camel.version}">camel-jackson</feature>
+        <bundle>wrap:mvn:javax.persistence/persistence-api/1.0.2</bundle>
     </feature>
 </features>
