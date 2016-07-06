@@ -11,9 +11,12 @@ import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.component.cxf.DataFormat;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.model.DataFormatDefinition;
+import org.apache.camel.model.ModelHelper;
 import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.test.spring.CamelSpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
+import org.globex.Account;
+import org.globex.Company;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.AbstractApplicationContext;
@@ -35,10 +38,20 @@ public class DozerTest extends CamelSpringTestSupport {
 	protected MockEndpoint dozerEndpoint;
 	
 	
-//	@Test
-//	public void test1() {
-//		assertTrue(true);
-//	}
+	@Test
+	public void testDozer() throws InterruptedException {
+		
+		dozerEndpoint.expectedBodiesReceived("Fail");
+		
+		template.sendBody("Robocops,NA,true,Bill,Smith,100 N Park Ave.,Phoenix,AZ,85017,200-555-1000"
+				  +System.lineSeparator()+
+				  "MountainBikers,SA,true,George,Jungle,1101 Smith St.,Raleigh,NC,27519,600-555-7000");
+		
+		Thread.sleep(5000);
+		
+		dozerEndpoint.assertIsSatisfied();
+	}
+	
 	
 	@Test
 	public void testFullRoute() throws CamelExecutionException, Exception {
@@ -49,7 +62,9 @@ public class DozerTest extends CamelSpringTestSupport {
 			);
 		resultEndpoint.expectedMessageCount(2);
 		
-		template.sendBody("Robocops,NA,true,Bill,Smith,100 N Park Ave.,Phoenix,AZ,85017,200-555-1000"+System.lineSeparator()+"MountainBikers,SA,true,George,Jungle,1101 Smith St.,Raleigh,NC,27519,600-555-7000");
+		template.sendBody("Robocops,NA,true,Bill,Smith,100 N Park Ave.,Phoenix,AZ,85017,200-555-1000"
+						  +System.lineSeparator()+
+						  "MountainBikers,SA,true,George,Jungle,1101 Smith St.,Raleigh,NC,27519,600-555-7000");
 		
 		Thread.sleep(5000);
 		
@@ -71,9 +86,13 @@ public class DozerTest extends CamelSpringTestSupport {
 			}
 		};
 		
+		
 		context.getRouteDefinition("CSV2JSON").adviceWith(context, advice);
 		//context.startRoute("CSV2JSON");
 		context.start();
+		
+		String xml = ModelHelper.dumpModelAsXml(context, context.getRouteDefinition("CSV2JSON"));
+		System.out.println("XML -> " + xml);
 	}
 
 	private String readFile(String filePath) throws Exception {

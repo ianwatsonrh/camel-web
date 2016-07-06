@@ -27,7 +27,7 @@ public class OrderProcess extends RouteBuilder {
 	@Override
 	public void configure() throws Exception {
 		from(orderInput).routeId("OrderProcess")
-			.log("Body is -> ${body}")
+			.log("Order Process body is -> ${body}")
 			.unmarshal().json(Account.class,null)
 			.multicast().aggregationStrategy(new AccountAggregator()).parallelProcessing()
 				.to(restEndpoint)
@@ -41,11 +41,11 @@ public class OrderProcess extends RouteBuilder {
 			.to("cxf:bean:customerWebservice");
 		
 		
-		from(restEndpoint).routeId("InvokeRS")
+		from(restEndpoint).routeId("InvokeRS").tracing()
 			.log("Invoking RS endpoint with body -> ${body}")
 			.setHeader("Content-Type",constant("application/json"))
 			.setHeader("Exchange.HTTP_PATH",constant("/customer/enrich"))
-			.to("cxfrs:bean:customerRestServiceClient")
+			.to("cxfrs:bean:customerRestServiceClient").id("customerRestServiceClient")
 			.log("Response from RS endpoint is -> ${body}");
 		
 	}

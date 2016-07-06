@@ -19,11 +19,10 @@ public class DBInsert extends RouteBuilder {
 	
 	@Override
 	public void configure() throws Exception {
-		
 		from(input).routeId("DBInsert").startupOrder(500)
 			.log("Inserting into DB")
 			.bean(process,"defineNamedParameters")
-			.to(database);
+			.to(database).id("Database");
 					
 	}	
 }
