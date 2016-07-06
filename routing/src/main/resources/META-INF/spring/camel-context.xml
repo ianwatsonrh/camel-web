@@ -82,6 +82,8 @@
     
 	<bean id="dlqSQLBean" class="com.redhat.iw.beans.DLQBean"/>
 	
+	<bean id="accountFactory" class="com.redhat.iw.AccountFactory"/>
+	
 	<!-- <osgi:reference id="persistenceProvider" interface="javax.persistence.spi.PersistenceProvider"/> -->
 	
 	<bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalEntityManagerFactoryBean">
@@ -116,23 +118,10 @@
 		    <log message="Body has been recieved -&gt; ${body}"/>
 		    <bean ref="customer" method="updateAccount"/>
 		</route>
-  
-  <!-- 
-  
-  <route>
-        <from uri="timer://foo?fixedRate=true&amp;period=5s"/>
-                <log message="Sending to JMS queue"/>
-                <setBody>
-                        <constant>Test message</constant>
-                </setBody>
-                <to uri="activemq:foo.bar"/>
-        </route>
--->
          <route>
                 <from ref="orderDQL"/>
                 <log message="DLQ message is -> ${body}"/>
                 <log message="Header -> ${header.FailureMessage}"/>
         </route>
-        
 </camelContext>
 </beans>
